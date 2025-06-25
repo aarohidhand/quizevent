@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Quiz Result</title>
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+
+  <!-- Firebase config -->
+  <script src="firebase.js"></script>
+</head>
+<body>
+  <h1>Your Final Score:</h1>
+  <h2 id="score">Loading...</h2>
+
+  <script>
+    firebase.auth().onAuthStateChanged(user => {
+      if (!user) {
+        alert("You must be logged in to view your score.");
+        window.location.href = "index.html";
+        return;
+      }
+
+      db.collection("quizScores").doc(user.uid).get().then(doc => {
+        if (doc.exists) {
+          const score = doc.data().score || 0;
+          document.getElementById("score").innerText = `${score} / 3`;
+        } else {
+          document.getElementById("score").innerText = "Score not found.";
+        }
+
+        // Mark the user as having attempted the quiz
+        db.collection("quizScores").doc(user.uid).set({
+          hasAttempted: true
+        }, { merge: true });
+      });
+    });
+  </script>
+</body>
+</html>

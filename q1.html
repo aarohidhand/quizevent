@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Question 1</title>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <script src="firebase.js"></script>
+</head>
+<body>
+  <h2>Question 1</h2>
+  <p>What is the capital of France?</p>
+
+  <form id="quizForm">
+    <input type="radio" name="answer" value="0"> Berlin<br>
+    <input type="radio" name="answer" value="1"> Paris<br>
+    <input type="radio" name="answer" value="2"> Madrid<br><br>
+    <button type="submit">Submit</button>
+  </form>
+
+  <p id="timer">Time left: 10s</p>
+  <p id="msg"></p>
+
+  <script>
+    let timeLeft = 10;
+    let timer = setInterval(() => {
+      timeLeft--;
+      document.getElementById("timer").innerText = `Time left: ${timeLeft}s`;
+      if (timeLeft <= 0) {
+        clearInterval(timer);
+        handleSubmit();
+      }
+    }, 1000);
+
+    let currentUser;
+
+    firebase.auth().onAuthStateChanged(user => {
+      if (user) {
+        currentUser = user;
+      } else {
+        window.location.href = "index.html";
+      }
+    });
+
+    document.getElementById("quizForm").addEventListener("submit", function (e) {
+      e.preventDefault();
+      clearInterval(timer);
+      handleSubmit();
+    });
+
+    function handleSubmit() {
+    const selected = document.querySelector('input[name="answer"]:checked');
+    const correct = "1";
+
+    if (!currentUser) {
+        document.getElementById("msg").innerText = "User not signed in. Try reloading.";
+        return;
+    }
+
+    if (selected && selected.value === correct) {
+        document.getElementById("msg").innerText = "✅ Correct!";
+        db.collection("quizScores").doc(currentUser.uid).set({
+        score: firebase.firestore.FieldValue.increment(1)
+        }, { merge: true }).then(() => {
+        setTimeout(() => {
+            window.location.href = "q2.html";
+        }, 1000);
+        });
+    } else {
+        document.getElementById("msg").innerText = "❌ Incorrect.";
+        setTimeout(() => {
+        window.location.href = "q2.html";
+        }, 1000);
+    }
+    }
+
+
+  </script>
+</body>
+</html>

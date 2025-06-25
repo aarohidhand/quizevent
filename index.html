@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Quiz Landing</title>
+
+  <!-- Use compat versions! -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+  <h1>Welcome to the Quiz</h1>
+
+  <button id="loginBtn">Login with Google</button>
+  <br><br>
+
+  <button id="startBtn" disabled>Start Quiz</button>
+
+  <p id="status"></p>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyDr0bNa6y1_aE8jNqfX4Al2Hir0DoulXzw",
+      authDomain: "quiz-event.firebaseapp.com",
+      projectId: "quiz-event",
+      storageBucket: "quiz-event.appspot.com",
+      messagingSenderId: "1059717312574",
+      appId: "1:1059717312574:web:4237b2b46b3d340ea3216f",
+      measurementId: "G-88K8K322T0"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    let currentUser;
+
+    window.onload = function () {
+      document.getElementById("loginBtn").onclick = function () {
+        const provider = new firebase.auth.GoogleAuthProvider();
+
+        auth.signInWithPopup(provider).then(result => {
+          currentUser = result.user;
+
+          db.collection("quizScores").doc(currentUser.uid).get().then(doc => {
+            if (doc.exists && doc.data().hasAttempted) {
+              document.getElementById("status").innerText =
+                "❌ You have already attempted the quiz.";
+              document.getElementById("startBtn").disabled = true;
+            } else {
+              document.getElementById("status").innerText =
+                `✅ Logged in as ${currentUser.displayName}. You may begin.`;
+              document.getElementById("startBtn").disabled = false;
+            }
+          });
+        }).catch(err => {
+          document.getElementById("status").innerText = `Login failed: ${err.message}`;
+        });
+      };
+
+      document.getElementById("startBtn").onclick = function () {
+        if (!currentUser) return;
+
+        db.collection("quizScores").doc(currentUser.uid).set({
+          name: currentUser.displayName,
+          email: currentUser.email,
+          score: 0,
+          hasAttempted: false,
+          timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true }).then(() => {
+          window.location.href = "q1.html";
+        });
+      };
+    };
+  </script>
+</body>
+</html>
