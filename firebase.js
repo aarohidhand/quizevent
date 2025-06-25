@@ -1,4 +1,3 @@
-// firebase.js
 const firebaseConfig = {
     apiKey: "AIzaSyDr0bNa6y1_aE8jNqfX4Al2Hir0DoulXzw",
     authDomain: "quiz-event.firebaseapp.com",
@@ -9,7 +8,7 @@ const firebaseConfig = {
     measurementId: "G-88K8K322T0"
   };
   
-  firebase.initializeApp(firebaseConfig); // This must run before anything else
+  firebase.initializeApp(firebaseConfig); 
   const auth = firebase.auth();
   const db = firebase.firestore();
   
